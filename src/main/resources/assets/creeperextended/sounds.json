@@ -4,5 +4,11 @@
     "sounds": [
       "creeperextended:beep"
     ]
+  },
+  "explosion_ringing": {
+    "subtitle": "text.sounds.creeperextended.explosion_ringing",
+    "sounds": [
+      "creeperextended:explosion_ringing"
+    ]
   }
 }

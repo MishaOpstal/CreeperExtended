@@ -80,6 +80,62 @@ public class CreeperExtended implements ModInitializer {
         }
     }
 
+    /**
+     * Returns configured flashbang fade-in duration in ticks.
+     */
+    public static int getFlashBangFadeInTicks() {
+        // Try wrapper accessor first
+        try {
+            var method = CONFIG.getClass().getMethod("flashBangFadeInTicks");
+            Object value = method.invoke(CONFIG);
+            int ticks = value instanceof Number ? ((Number) value).intValue() : 10;
+            return Math.max(0, Math.min(200, ticks));
+        } catch (Exception ignored) {
+            try {
+                for (var field : CONFIG.getClass().getDeclaredFields()) {
+                    if (field.getType().getName().equals("nl.mishaopstal.creeperextended.CreeperExtendedConfigModel")) {
+                        field.setAccessible(true);
+                        Object model = field.get(CONFIG);
+                        var f = model.getClass().getDeclaredField("flashBangFadeInTicks");
+                        f.setAccessible(true);
+                        int ticks = f.getInt(model);
+                        return Math.max(0, Math.min(200, ticks));
+                    }
+                }
+            } catch (Exception ignored2) { }
+            LOGGER.warn("[CreeperExtended] flashBangFadeInTicks not available; defaulting to 10");
+            return 10;
+        }
+    }
+
+    /**
+     * Returns configured flashbang overlay color (RGB int).
+     */
+    public static int getFlashBangColor() {
+        // Try wrapper accessor first
+        try {
+            var method = CONFIG.getClass().getMethod("flashBangColor");
+            Object value = method.invoke(CONFIG);
+            int color = value instanceof Number ? ((Number) value).intValue() : 0xFFFFFF;
+            return color & 0xFFFFFF;
+        } catch (Exception ignored) {
+            try {
+                for (var field : CONFIG.getClass().getDeclaredFields()) {
+                    if (field.getType().getName().equals("nl.mishaopstal.creeperextended.CreeperExtendedConfigModel")) {
+                        field.setAccessible(true);
+                        Object model = field.get(CONFIG);
+                        var f = model.getClass().getDeclaredField("flashBangColor");
+                        f.setAccessible(true);
+                        int color = f.getInt(model);
+                        return color & 0xFFFFFF;
+                    }
+                }
+            } catch (Exception ignored2) { }
+            LOGGER.warn("[CreeperExtended] flashBangColor not available; defaulting to white");
+            return 0xFFFFFF;
+        }
+    }
+
     @Override
     public void onInitialize() {
         LOGGER.info("Starting Creeper Extended...");

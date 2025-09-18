@@ -20,15 +20,16 @@ public class CreeperExtendedConfigModel {
     @RangeConstraint(min = 1, max = 20)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
     public int flashBangRadius = 10;
-    @RangeConstraint(min = 1, max = 1000)
+    @RangeConstraint(min = 1, max = 150)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
     public int flashBangDurationTicks = 100;
-    @RangeConstraint(min = 0, max = 1)
+    @RangeConstraint(min = 0, max = 200)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public float flashBangBlindnessStrength = 1.0f; // 0.0 .. 1.0
-    @RangeConstraint(min = 0, max = 1)
+    public int flashBangFadeInTicks = 10;
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public float flashBangNauseaStrength = 0.5f; // 0.0 .. 1.0
+    public int flashBangColor = 0xFFFFFF; // RGB color of the flash overlay
+    @RangeConstraint(min = 0.01f, max = 1.f)
+    public float flashBangVolume = 1.0f; // 0.0 .. 1.0
 
     @SectionHeader("Beeping")
     public boolean beeping = true;

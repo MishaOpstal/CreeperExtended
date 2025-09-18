@@ -4,7 +4,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.registry.Registries;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.particle.ParticleTypes;
@@ -107,11 +106,14 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
         }
         // Handle beeps on whole-rotation intervals
         if (creeperextended$spinAngle >= 360f) {
-            int rotations = (int)(creeperextended$spinAngle / 360f);
-            creeperextended$spinAngle = creeperextended$spinAngle % 360f;
-            boolean beeping = CreeperExtended.CONFIG.beeping();
             int baseBeepsPerCycle = Math.max(1, CreeperExtended.CONFIG.beepAmountPerFullSpinCycle());
             int incPerCycle = Math.max(0, CreeperExtended.getBeepIncreasePerFullSpinCycle());
+
+            int rotations = (int)(creeperextended$spinAngle / (360f *baseBeepsPerCycle)); // handle multiple rotations
+            if (rotations < 1) rotations = 1; // always at least one
+            creeperextended$spinAngle = creeperextended$spinAngle % 360f;
+            boolean beeping = CreeperExtended.CONFIG.beeping();
+
             float volume = CreeperExtended.CONFIG.beepVolume();
             if (beeping) {
                 for (int r = 0; r < rotations; r++) {
@@ -141,24 +143,16 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                     boolean doFlash = CreeperExtended.CONFIG.flashBang();
                     int radius = CreeperExtended.CONFIG.flashBangRadius();
                     int duration = CreeperExtended.CONFIG.flashBangDurationTicks();
-                    float blindStrength = CreeperExtended.CONFIG.flashBangBlindnessStrength();
-                    float nauseaStrength = CreeperExtended.CONFIG.flashBangNauseaStrength();
                     double radiusSq = (double)radius * (double)radius;
 
                     if (doFlash) {
                         for (var p : serverWorld.getPlayers(player -> player.squaredDistanceTo(self) <= radiusSq)) {
                             if (p.canSee(self) && isLookingAt(p, self)) {
                                 blindedAny = true;
-                                if (blindStrength > 0f) {
-                                    int amp = (int)Math.floor((double)blindStrength * 4.0);
-                                    p.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, duration, amp, false, true, true));
-                                }
-                                if (nauseaStrength > 0f) {
-                                    int ampN = (int)Math.floor((double)nauseaStrength * 4.0);
-                                    p.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, duration, ampN, false, true, true));
-                                }
-                                // Add our custom Flashbang effect to drive the client overlay
-                                p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), duration, 0, false, false, false));
+                                // Use only our custom Flashbang effect to drive the client-side overlay.
+                                // Encode fade-in ticks in the amplifier (capped to 127 for safety).
+                                int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashBangFadeInTicks(), 0, 127);
+                                p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), duration, fadeInTicks, false, false, false));
                                 CreeperExtended.LOGGER.info("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", self.getId(), p.getName().getString(), radius, duration);
                             }
                         }
