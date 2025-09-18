@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "creeperextended",
+  "version": "${version}",
+  "name": "Creeper Extended",
+  "description": "This mod builds upon the original creeper mechanics, adding more customization options and features to enhance your Minecraft experience.",
+  "authors": ["Misha Opstal"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "CreeperExtended.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "nl.mishaopstal.creeperextended.client.CreeperExtendedDataGenerator"
+    ],
+    "client": [
+      "nl.mishaopstal.creeperextended.client.CreeperExtendedClient"
+    ],
+    "main": [
+      "nl.mishaopstal.creeperextended.CreeperExtended"
+    ]
+  },
+  "mixins": [
+    "creeperextended.mixins.json",
+    {
+      "config": "creeperextended.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

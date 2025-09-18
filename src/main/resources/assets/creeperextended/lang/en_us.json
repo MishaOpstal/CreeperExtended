@@ -1,0 +1,19 @@
+{
+  "text.config.creeper-extended-config.title": "Creeper Extended Config",
+
+  "text.config.creeper-extended-config.section.Animation": "Animation",
+  "text.config.creeper-extended-config.option.spinAnimation": "Spin Animation",
+  "text.config.creeper-extended-config.option.showParticles": "Show Particles",
+
+  "text.config.creeper-extended-config.section.Flashbang": "Flashbang",
+  "text.config.creeper-extended-config.option.flashBang": "Flashbang",
+  "text.config.creeper-extended-config.option.flashBangRadius": "Flashbang Radius",
+  "text.config.creeper-extended-config.option.flashBangDurationTicks": "Flashbang Duration (Ticks)",
+  "text.config.creeper-extended-config.option.flashBangBlindnessStrength": "Flashbang Blindness Strength",
+  "text.config.creeper-extended-config.option.flashBangNauseaStrength": "Flashbang Nausea Strength",
+
+  "text.config.creeper-extended-config.section.Beeping": "Beeping",
+  "text.config.creeper-extended-config.option.beeping": "Beeping",
+  "text.config.creeper-extended-config.option.beepAmountPerFullSpinCycle": "Beep Amount Per Full Spin Cycle",
+  "text.config.creeper-extended-config.option.beepVolume": "Beep Volume"
+}
