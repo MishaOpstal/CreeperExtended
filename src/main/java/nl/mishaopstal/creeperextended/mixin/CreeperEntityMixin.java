@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.TntEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.registry.Registries;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.registry.entry.RegistryEntry;
 
 /**
  * Server-side fuse-time behavior: spinning state, beeps, and special effects.
@@ -116,7 +118,7 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                     int beepsThisCycle = baseBeepsPerCycle + (creeperextended$spinCyclesCompleted * incPerCycle);
                     for (int i = 0; i < beepsThisCycle; i++) {
                         creeperextended$beepCounter++;
-                        self.playSound(SoundEvent.of(Identifier.of("creeperextended:beep")), volume, 1.6f);
+                        self.playSound(SoundEvent.of(Identifier.of("creeperextended:beep")), volume, 1.0f);
                     }
                     CreeperExtended.LOGGER.info("[CreeperExtended] BeepCycle id={} cycle={} beepsThisCycle={} totalBeeps={} vol={} base={} inc={}"
                             , self.getId(), creeperextended$spinCyclesCompleted, beepsThisCycle, creeperextended$beepCounter, String.format("%.2f", volume), baseBeepsPerCycle, incPerCycle);
@@ -155,6 +157,8 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                                     int ampN = (int)Math.floor((double)nauseaStrength * 4.0);
                                     p.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, duration, ampN, false, true, true));
                                 }
+                                // Add our custom Flashbang effect to drive the client overlay
+                                p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), duration, 0, false, false, false));
                                 CreeperExtended.LOGGER.info("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", self.getId(), p.getName().getString(), radius, duration);
                             }
                         }

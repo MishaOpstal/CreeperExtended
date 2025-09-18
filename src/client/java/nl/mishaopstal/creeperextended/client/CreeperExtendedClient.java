@@ -6,5 +6,7 @@ public class CreeperExtendedClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // Register client overlays and callbacks
+        ClientFlashOverlay.init();
     }
 }

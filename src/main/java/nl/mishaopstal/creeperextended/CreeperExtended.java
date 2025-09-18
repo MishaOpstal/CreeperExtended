@@ -1,6 +1,11 @@
 package nl.mishaopstal.creeperextended;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
+import nl.mishaopstal.creeperextended.effects.FlashbangStatusEffect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +16,7 @@ public class CreeperExtended implements ModInitializer {
     public static final String MOD_ID = "creeperextended";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final CreeperExtendedConfig CONFIG = CreeperExtendedConfig.createAndLoad();
+    public static final StatusEffect FLASHBANG_EFFECT = new FlashbangStatusEffect();
 
     /**
      * Returns the configured explosion delay in ticks (20 ticks = 1s).
@@ -78,6 +84,10 @@ public class CreeperExtended implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("Starting Creeper Extended...");
 
-        // Creeper behavior modifications are applied via Mixins.
+        // Initialize and register status effects
+        Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "flashbang"), FLASHBANG_EFFECT);
+
+        // Client hooks are registered via the client entrypoint (CreeperExtendedClient).
+        // Avoid touching client-only classes here, to not crash on dedicated servers.
     }
 }

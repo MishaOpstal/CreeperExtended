@@ -21,5 +21,7 @@
   "text.config.creeper-extended-config.option.beepAmountIncreasePerFullSpinCycle": "How much to increase the beep amount per 2 full spin cycles",
   "text.config.creeper-extended-config.option.beepVolume": "Beep Volume",
 
-  "text.sounds.creeperextended.beep": "Beep"
+  "text.sounds.creeperextended.beep": "Beep",
+
+  "effect.creeperextended.flashbang": "Flashbang"
 }
