@@ -1,6 +1,9 @@
 {
   "text.config.creeper-extended-config.title": "Creeper Extended Config",
 
+  "text.config.creeper-extended-config.section.Explosion": "Explosion",
+  "text.config.creeper-extended-config.option.explosionDelaySeconds": "Explosion Delay (Seconds)",
+
   "text.config.creeper-extended-config.section.Animation": "Animation",
   "text.config.creeper-extended-config.option.spinAnimation": "Spin Animation",
   "text.config.creeper-extended-config.option.showParticles": "Show Particles",
@@ -15,5 +18,8 @@
   "text.config.creeper-extended-config.section.Beeping": "Beeping",
   "text.config.creeper-extended-config.option.beeping": "Beeping",
   "text.config.creeper-extended-config.option.beepAmountPerFullSpinCycle": "Beep Amount Per Full Spin Cycle",
-  "text.config.creeper-extended-config.option.beepVolume": "Beep Volume"
+  "text.config.creeper-extended-config.option.beepAmountIncreasePerFullSpinCycle": "How much to increase the beep amount per 2 full spin cycles",
+  "text.config.creeper-extended-config.option.beepVolume": "Beep Volume",
+
+  "text.sounds.creeperextended.beep": "Beep"
 }

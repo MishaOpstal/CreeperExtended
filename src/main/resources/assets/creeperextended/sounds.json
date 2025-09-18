@@ -1,0 +1,8 @@
+{
+  "beep": {
+    "subtitle": "text.sounds.creeperextended.beep",
+    "sounds": [
+      "creeperextended:beep"
+    ]
+  }
+}

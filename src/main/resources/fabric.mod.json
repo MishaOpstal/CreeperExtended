@@ -7,7 +7,7 @@
   "authors": ["Misha Opstal"],
   "contact": {},
   "license": "MIT",
-  "icon": "CreeperExtended.png",
+  "icon": "assets/creeperextended/icons/CreeperExtended.png",
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
