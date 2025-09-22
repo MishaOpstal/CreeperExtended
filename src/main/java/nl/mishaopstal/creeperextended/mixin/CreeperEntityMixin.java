@@ -142,7 +142,7 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                     boolean blindedAny = false;
                     boolean doFlash = CreeperExtended.CONFIG.flashBang();
                     int radius = CreeperExtended.CONFIG.flashBangRadius();
-                    int duration = CreeperExtended.CONFIG.flashBangDurationTicks();
+                    int duration = CreeperExtended.CONFIG.flashBangHoldTicks();
                     double radiusSq = (double)radius * (double)radius;
 
                     if (doFlash) {

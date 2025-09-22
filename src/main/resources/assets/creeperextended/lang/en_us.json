@@ -11,8 +11,10 @@
   "text.config.creeper-extended-config.section.Flashbang": "Flashbang",
   "text.config.creeper-extended-config.option.flashBang": "Flashbang",
   "text.config.creeper-extended-config.option.flashBangRadius": "Flashbang Radius",
-  "text.config.creeper-extended-config.option.flashBangDurationTicks": "Flashbang Duration (Ticks)",
   "text.config.creeper-extended-config.option.flashBangFadeInTicks": "Flashbang Fade In (Ticks)",
+  "text.config.creeper-extended-config.option.flashBangHoldTicks": "Flashbang Hold (Ticks)",
+  "text.config.creeper-extended-config.option.flashBangFadeOutTicks": "Flashbang Fade Out (Ticks)",
+
   "text.config.creeper-extended-config.option.flashBangColor": "Flashbang Color",
   "text.config.creeper-extended-config.option.flashBangVolume": "Flashbang Volume",
 

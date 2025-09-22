@@ -9,13 +9,11 @@ import nl.mishaopstal.creeperextended.effects.FlashbangStatusEffect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import nl.mishaopstal.creeperextended.CreeperExtendedConfig;
-
 public class CreeperExtended implements ModInitializer {
 
     public static final String MOD_ID = "creeperextended";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    public static final CreeperExtendedConfig CONFIG = CreeperExtendedConfig.createAndLoad();
+    public static final nl.mishaopstal.creeperextended.CreeperExtendedConfig CONFIG = nl.mishaopstal.creeperextended.CreeperExtendedConfig.createAndLoad();
     public static final StatusEffect FLASHBANG_EFFECT = new FlashbangStatusEffect();
 
     /**
@@ -105,6 +103,56 @@ public class CreeperExtended implements ModInitializer {
             } catch (Exception ignored2) { }
             LOGGER.warn("[CreeperExtended] flashBangFadeInTicks not available; defaulting to 10");
             return 10;
+        }
+    }
+
+    public static int getFlashBangFadeOutTicks() {
+        // Try wrapper accessor first
+        try {
+            var method = CONFIG.getClass().getMethod("flashBangFadeOutTicks");
+            Object value = method.invoke(CONFIG);
+            int ticks = value instanceof Number ? ((Number) value).intValue() : 10;
+            return Math.max(0, Math.min(200, ticks));
+        } catch (Exception ignored) {
+            try {
+                for (var field : CONFIG.getClass().getDeclaredFields()) {
+                    if (field.getType().getName().equals("nl.mishaopstal.creeperextended.CreeperExtendedConfigModel")) {
+                        field.setAccessible(true);
+                        Object model = field.get(CONFIG);
+                        var f = model.getClass().getDeclaredField("flashBangFadeOutTicks");
+                        f.setAccessible(true);
+                        int ticks = f.getInt(model);
+                        return Math.max(0, Math.min(200, ticks));
+                    }
+                }
+            } catch (Exception ignored2) { }
+            LOGGER.warn("[CreeperExtended] flashBangFadeOutTicks not available; defaulting to 10");
+            return 10;
+        }
+    }
+
+    public static int getFlashBangHold() {
+        // Try wrapper accessor first
+        try {
+            var method = CONFIG.getClass().getMethod("flashBangHoldTicks");
+            Object value = method.invoke(CONFIG);
+            int ticks = value instanceof Number ? ((Number) value).intValue() : 100;
+            return Math.max(0, ticks);
+        } catch (Exception ignored) {
+            try {
+                for (var field : CONFIG.getClass().getDeclaredFields()) {
+                    if (field.getType().getName().equals("nl.mishaopstal.creeperextended.CreeperExtendedConfigModel")) {
+                        field.setAccessible(true);
+                        Object model = field.get(CONFIG);
+                        var f = model.getClass().getDeclaredField("flashBangHoldTicks");
+                        f.setAccessible(true);
+                        int ticks = f.getInt(model);
+                        return Math.max(0, ticks);
+                    }
+                }
+            } catch (Exception ignored2) { }
+            LOGGER.warn("[CreeperExtended] flashBangHoldTicks not available; defaulting to 100");
+            return 100;
         }
     }
 
