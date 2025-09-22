@@ -152,8 +152,10 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                                 // Use only our custom Flashbang effect to drive the client-side overlay.
                                 // Encode fade-in ticks in the amplifier (capped to 127 for safety).
                                 int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashBangFadeInTicks(), 0, 127);
-                                p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), duration, fadeInTicks, false, false, false));
-                                CreeperExtended.LOGGER.info("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", self.getId(), p.getName().getString(), radius, duration);
+                                int fadeOutTicks = CreeperExtended.getFlashBangFadeOutTicks();
+                                int totalDuration = duration + fadeOutTicks + fadeInTicks;
+                                p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), totalDuration, fadeInTicks, false, false, false));
+                                CreeperExtended.LOGGER.info("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", self.getId(), p.getName().getString(), radius, totalDuration);
                             }
                         }
                     }

@@ -3,13 +3,17 @@ package nl.mishaopstal.creeperextended.client;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import nl.mishaopstal.creeperextended.CreeperExtended;
@@ -39,6 +43,18 @@ public final class ClientFlashOverlay {
         HudRenderCallback.EVENT.register((DrawContext drawContext, RenderTickCounter tickCounter) -> {
             renderOverlay(drawContext);
         });
+
+        // Register effect removal listener
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            ItemStack stack = player.getStackInHand(hand);
+            if (stack.getItem() == Items.MILK_BUCKET) {
+                if (player == MinecraftClient.getInstance().player) {
+                    // stop immediately
+                    flashing = false;
+                }
+            }
+            return ActionResult.PASS;
+        });
     }
 
     private static void onClientTick(MinecraftClient client) {
@@ -61,9 +77,6 @@ public final class ClientFlashOverlay {
             fadeInTicks = amp > 0 ? amp : CreeperExtended.getFlashBangFadeInTicks();
             fadeOutTicks = CreeperExtended.getFlashBangFadeOutTicks();
             colorRGB = CreeperExtended.getFlashBangColor();
-        } else {
-            // Effect ended
-            flashing = false;
         }
     }
 
