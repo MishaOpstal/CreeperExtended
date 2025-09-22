@@ -30,6 +30,10 @@ public final class ClientFlashOverlay {
 
     private static RegistryEntry<net.minecraft.entity.effect.StatusEffect> FLASHBANG_ENTRY;
 
+    // Signature of the last seen effect instance to avoid retrigger during the same effect
+    private static long lastEffectEndTickSig = -1L;
+    private static int lastEffectAmplifierSig = -1;
+
     private ClientFlashOverlay() {}
 
     public static void init() {
@@ -51,6 +55,8 @@ public final class ClientFlashOverlay {
                 if (player == MinecraftClient.getInstance().player) {
                     // stop immediately
                     flashing = false;
+                    lastEffectEndTickSig = -1L;
+                    lastEffectAmplifierSig = -1;
                 }
             }
             return ActionResult.PASS;
@@ -61,22 +67,70 @@ public final class ClientFlashOverlay {
         if (client.player == null || client.world == null || FLASHBANG_ENTRY == null) {
             // reset if no player/world
             flashing = false;
+            lastEffectEndTickSig = -1L;
+            lastEffectAmplifierSig = -1;
             return;
         }
+
         StatusEffectInstance inst = client.player.getStatusEffect(FLASHBANG_ENTRY);
-        if (inst != null) {
-            if (!flashing) {
-                // Start flashing
-                flashing = true;
-                startTick = client.world.getTime();  // world time ticks
-                hold = CreeperExtended.getFlashBangHold();  // total effect duration from start
-                client.player.playSound(SoundEvent.of(Identifier.of("creeperextended:explosion_ringing")), CreeperExtended.CONFIG.flashBangVolume(), 1.0f);
+        long worldTime = client.world.getTime();
+
+        if (inst == null) {
+            // Effect gone: clear signature to allow next real trigger
+            lastEffectEndTickSig = -1L;
+            lastEffectAmplifierSig = -1;
+            return;
+        }
+
+        int amp = inst.getAmplifier();
+        long effectEndTickNow = worldTime + inst.getDuration();
+
+        boolean isNewEffect = (amp != lastEffectAmplifierSig) || (effectEndTickNow > lastEffectEndTickSig + 1L);
+        if (isNewEffect) {
+            // Determine base phase lengths from config and amplifier
+            int baseFadeIn = amp > 0 ? amp : CreeperExtended.getFlashBangFadeInTicks();
+            int baseHold = CreeperExtended.getFlashBangHold();
+            int baseFadeOut = CreeperExtended.getFlashBangFadeOutTicks();
+            baseFadeIn = Math.max(0, baseFadeIn);
+            baseHold = Math.max(0, baseHold);
+            baseFadeOut = Math.max(0, baseFadeOut);
+
+            int baseTotal = baseFadeIn + baseHold + baseFadeOut;
+            int effDur = Math.max(0, inst.getDuration());
+
+            int tFi, tHo, tFo;
+            if (baseTotal <= 0) {
+                tFi = tHo = tFo = 0;
+            } else {
+                int targetTotal = Math.min(effDur, baseTotal);
+                if (targetTotal == baseTotal) {
+                    tFi = baseFadeIn;
+                    tHo = baseHold;
+                    tFo = baseFadeOut;
+                } else {
+                    float ratio = targetTotal / (float) baseTotal;
+                    tFi = Math.round(baseFadeIn * ratio);
+                    tHo = Math.round(baseHold * ratio);
+                    tFo = targetTotal - tFi - tHo; // ensure sum matches exactly
+                    if (tFo < 0) { tHo = Math.max(0, tHo + tFo); tFo = 0; }
+                    if (tHo < 0) { tFi = Math.max(0, tFi + tHo); tHo = 0; }
+                    if (tFi < 0) { tFi = 0; }
+                }
             }
-            // Update dynamic parameters from effect/config
-            int amp = inst.getAmplifier();
-            fadeInTicks = amp > 0 ? amp : CreeperExtended.getFlashBangFadeInTicks();
-            fadeOutTicks = CreeperExtended.getFlashBangFadeOutTicks();
+
+            // Start/restart overlay
+            startTick = worldTime;
+            fadeInTicks = tFi;
+            hold = tHo;
+            fadeOutTicks = tFo;
             colorRGB = CreeperExtended.getFlashBangColor();
+
+            flashing = (fadeInTicks + hold + fadeOutTicks) > 0;
+            client.player.playSound(SoundEvent.of(Identifier.of("creeperextended:explosion_ringing")), CreeperExtended.CONFIG.flashBangVolume(), 1.0f);
+
+            // Update signature to block retrigger during the same effect instance
+            lastEffectAmplifierSig = amp;
+            lastEffectEndTickSig = effectEndTickNow;
         }
     }
 
@@ -93,22 +147,31 @@ public final class ClientFlashOverlay {
         int width = client.getWindow().getScaledWidth();
         int height = client.getWindow().getScaledHeight();
 
-        // --- Timing ---
-        int tFadeIn  = Math.max(1, fadeInTicks);
-        int tHold    = Math.max(1, hold);   // how long it stays fully lit
-        int tFadeOut = Math.max(1, fadeOutTicks);
+        // Use cached timings computed at trigger time; allow zeros
+        int tFadeIn = Math.max(0, fadeInTicks);
+        int tHold = Math.max(0, hold);
+        int tFadeOut = Math.max(0, fadeOutTicks);
+        int total = tFadeIn + tHold + tFadeOut;
+        if (total <= 0) {
+            flashing = false;
+            return;
+        }
 
         float alpha;
-        if (elapsed <= tFadeIn) {
+        if (elapsed < tFadeIn) {
             // Fade in (0 → 1)
-            alpha = (float) elapsed / (float) tFadeIn;
-        } else if (elapsed <= tFadeIn + tHold) {
+            alpha = (tFadeIn == 0) ? 1.0f : (float) elapsed / (float) tFadeIn;
+        } else if (elapsed < (tFadeIn + tHold)) {
             // Hold at full brightness
             alpha = 1.0f;
-        } else if (elapsed <= tFadeIn + tHold + tFadeOut) {
+        } else if (elapsed < total) {
             // Fade out (1 → 0)
-            float outProg = (float) (elapsed - (tFadeIn + tHold)) / (float) tFadeOut;
-            alpha = 1.0f - (float) Math.sqrt(outProg); // smooth curve
+            if (tFadeOut == 0) {
+                alpha = 0.0f;
+            } else {
+                float outProg = (float) (elapsed - (tFadeIn + tHold)) / (float) tFadeOut;
+                alpha = 1.0f - (float) Math.sqrt(MathHelper.clamp(outProg, 0f, 1f));
+            }
         } else {
             // Finished
             flashing = false;
@@ -126,7 +189,7 @@ public final class ClientFlashOverlay {
         drawContext.fill(0, 0, width, height, mainColor);
 
         // --- Ghosting effect (only during fade-out) ---
-        if (elapsed > tFadeIn + tHold && elapsed <= tFadeIn + tHold + tFadeOut) {
+        if (tFadeOut > 0 && elapsed >= tFadeIn + tHold && elapsed < total) {
             float outProg = MathHelper.clamp((float) (elapsed - (tFadeIn + tHold)) / (float) tFadeOut, 0f, 1f);
             float ghostPhase = 1.0f - outProg; // 1 at start of fade-out → 0 at end
             if (ghostPhase > 0f) {
