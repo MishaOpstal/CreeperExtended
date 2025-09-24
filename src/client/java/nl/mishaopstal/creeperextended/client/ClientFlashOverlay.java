@@ -42,7 +42,7 @@ public final class ClientFlashOverlay {
 
     private ClientFlashOverlay() {}
 
-    public static void init() {
+    public static void initialize() {
         // Resolve the registry entry for our status effect
         FLASHBANG_ENTRY = Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT);
 

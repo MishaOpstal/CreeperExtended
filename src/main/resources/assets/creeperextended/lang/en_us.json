@@ -27,5 +27,8 @@
 
   "text.sounds.creeperextended.beep": "Beep",
 
-  "effect.creeperextended.flashbang": "Flashbang"
+  "effect.creeperextended.flashbang": "Flashbang",
+  "item.creeperextended.flashbang": "Flashbang",
+
+  "item.group.creeperextended": "Creeper Extended"
 }

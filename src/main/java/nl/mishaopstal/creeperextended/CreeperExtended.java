@@ -2,12 +2,15 @@ package nl.mishaopstal.creeperextended;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import nl.mishaopstal.creeperextended.effects.FlashbangStatusEffect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static net.minecraft.item.Items.register;
 
 public class CreeperExtended implements ModInitializer {
 
