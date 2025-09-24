@@ -1,7 +1,7 @@
-package nl.mishaopstal.creeperextended.client;
+package nl.mishaopstal.creeperextended;
 
 import net.fabricmc.api.ClientModInitializer;
-import nl.mishaopstal.creeperextended.ModItems;
+import nl.mishaopstal.creeperextended.client.ClientFlashOverlay;
 
 public class CreeperExtendedClient implements ClientModInitializer {
 
