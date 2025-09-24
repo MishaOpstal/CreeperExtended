@@ -29,6 +29,7 @@ public class CreeperExtendedConfigModel {
     @RangeConstraint(min = 0, max = 200)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
     public int flashBangFadeOutTicks = 10;
+    public boolean flashBangJesus = false;
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
     public int flashBangColor = 0xFFFFFF; // RGB color of the flash overlay
     @RangeConstraint(min = 0.01f, max = 1.f)

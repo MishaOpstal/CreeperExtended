@@ -1,12 +1,18 @@
 // ClientFlashOverlay.java (client-only utility)
 package nl.mishaopstal.creeperextended.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.texture.Sprite;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -46,6 +52,7 @@ public final class ClientFlashOverlay {
         // Register HUD render overlay
         HudRenderCallback.EVENT.register((DrawContext drawContext, RenderTickCounter tickCounter) -> {
             renderOverlay(drawContext);
+            renderPersistentWobble(drawContext);
         });
 
         // Register effect removal listener
@@ -185,8 +192,32 @@ public final class ClientFlashOverlay {
         int baseColor = (colorRGB & 0xFFFFFF);
         int mainColor = (intAlpha << 24) | baseColor;
 
-        // Main overlay
-        drawContext.fill(0, 0, width, height, mainColor);
+        // Main overlay, if flashBangJesus is enabled, then show the flashbang_overlay, if not then use the drawContext.fill instead
+        if (CreeperExtended.isFlashBangJesusEnabled()) {
+            // Show JESUS flashbang overlay
+            Identifier texture = Identifier.of("creeperextended", "textures/gui/flashbang-overlay.png");
+            // renderLayer, texture, x, y, u, v, width, height, textureWidth, textureHeight
+            drawContext.drawTexture(
+                    RenderPipelines.GUI_TEXTURED,
+                    texture,
+                    0,
+                    0,
+                    0,
+                    0,
+                    width,
+                    height,
+                    width,
+                    height
+            );
+        } else {
+            drawContext.fill(
+                    0,
+                    0,
+                    width,
+                    height,
+                    mainColor
+            );
+        }
 
         // --- Ghosting effect (only during fade-out) ---
         if (tFadeOut > 0 && elapsed >= tFadeIn + tHold && elapsed < total) {
@@ -233,5 +264,56 @@ public final class ClientFlashOverlay {
                 }
             }
         }
+    }
+
+    // Draws a subtle chromatic wobble for the entire duration of the flashbang effect,
+    // even after the bright overlay has faded out. This simulates a mild nausea-like effect
+    // without touching the world camera (HUD-only post overlay).
+    private static void renderPersistentWobble(DrawContext drawContext) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null || client.player == null || FLASHBANG_ENTRY == null) return;
+
+        // Only run while the effect is active
+        StatusEffectInstance inst = client.player.getStatusEffect(FLASHBANG_ENTRY);
+        if (inst == null) return;
+
+        // If the bright overlay is active, keep wobble subtle instead of disabling it entirely
+        float overlayFactor = flashing ? 0.5f : 1.0f;
+
+        int width = client.getWindow().getScaledWidth();
+        int height = client.getWindow().getScaledHeight();
+        long t = client.world.getTime();
+
+        // Mild oscillation
+        float s1 = (float) Math.sin(t * 0.11f);
+        float s2 = (float) Math.sin(t * 0.071f + 1.3f);
+        float s3 = (float) Math.cos(t * 0.093f + 0.6f);
+
+        // Pixel offsets (very small to avoid motion sickness)
+        int xOff = Math.max(1, Math.round((s1 + s2) * 0.8f)); // -2..2 approx
+        int yOff = Math.round(s3 * 0.6f);                     // -1..1 approx
+
+        // Very low alpha, a little stronger at the start of the remaining duration
+        float lifeScale = MathHelper.clamp(inst.getDuration() / 100.0f, 0.2f, 1.0f); // 0.2..1.0
+        float alphaBase = 0.045f * lifeScale * (0.6f + 0.4f * Math.abs(s2));        // ~0.02..0.06
+        alphaBase *= overlayFactor;
+
+        int aL = (int) (alphaBase * 255);
+        int aR = (int) (alphaBase * 0.9f * 255);
+        int aC = (int) (alphaBase * 0.8f * 255);
+
+        // Slight chromatic tinting to simulate aberration
+        int rL = 255, gL = 235, bL = 235; // reddish
+        int rR = 235, gR = 235, bR = 255; // bluish
+        int rC = 235, gC = 255, bC = 235; // greenish
+
+        int colorL = (aL << 24) | (rL << 16) | (gL << 8) | bL;
+        int colorR = (aR << 24) | (rR << 16) | (gR << 8) | bR;
+        int colorC = (aC << 24) | (rC << 16) | (gC << 8) | bC;
+
+        // Draw three passes with tiny offsets to give a subtle wobble/aberration look
+        drawContext.fill(-xOff, yOff, width - xOff, height + yOff, colorL);
+        drawContext.fill(xOff, -yOff, width + xOff, height - yOff, colorR);
+        drawContext.fill(0, 0, width, height, colorC);
     }
 }

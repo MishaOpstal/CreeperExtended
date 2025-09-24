@@ -14,6 +14,7 @@
   "text.config.creeper-extended-config.option.flashBangFadeInTicks": "Flashbang Fade In (Ticks)",
   "text.config.creeper-extended-config.option.flashBangHoldTicks": "Flashbang Hold (Ticks)",
   "text.config.creeper-extended-config.option.flashBangFadeOutTicks": "Flashbang Fade Out (Ticks)",
+  "text.config.creeper-extended-config.option.flashBangJesus": "Flashbang Jesus",
 
   "text.config.creeper-extended-config.option.flashBangColor": "Flashbang Color",
   "text.config.creeper-extended-config.option.flashBangVolume": "Flashbang Volume",

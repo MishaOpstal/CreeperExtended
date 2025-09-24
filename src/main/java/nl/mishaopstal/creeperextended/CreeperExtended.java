@@ -184,6 +184,34 @@ public class CreeperExtended implements ModInitializer {
         }
     }
 
+    /**
+     * Returns whether the flashbang overlay should use the texture (aka "flashBangJesus") instead of solid color.
+     */
+    public static boolean isFlashBangJesusEnabled() {
+        // Try wrapper accessor first
+        try {
+            var method = CONFIG.getClass().getMethod("flashBangJesus");
+            Object value = method.invoke(CONFIG);
+            if (value instanceof Boolean b) return b;
+        } catch (Exception ignored) {
+            // fall through to model-based lookup
+        }
+        // Try accessing the underlying model directly
+        try {
+            for (var field : CONFIG.getClass().getDeclaredFields()) {
+                if (field.getType().getName().equals("nl.mishaopstal.creeperextended.CreeperExtendedConfigModel")) {
+                    field.setAccessible(true);
+                    Object model = field.get(CONFIG);
+                    var f = model.getClass().getDeclaredField("flashBangJesus");
+                    f.setAccessible(true);
+                    return f.getBoolean(model);
+                }
+            }
+        } catch (Exception ignored2) { }
+        LOGGER.warn("[CreeperExtended] flashBangJesus not available; defaulting to true");
+        return true;
+    }
+
     @Override
     public void onInitialize() {
         LOGGER.info("Starting Creeper Extended...");
