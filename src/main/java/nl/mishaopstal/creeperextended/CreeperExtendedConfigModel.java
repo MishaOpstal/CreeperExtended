@@ -16,24 +16,26 @@ public class CreeperExtendedConfigModel {
     public boolean showParticles = true;
 
     @SectionHeader("Flashbang")
-    public boolean flashBang = true;
+    @Sync(Option.SyncMode.OVERRIDE_CLIENT)
+    public boolean flashbangEnabled = true;
+    public boolean creeperFlashbang = true;
     @RangeConstraint(min = 1, max = 20)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public int flashBangRadius = 10;
+    public int flashbangRadius = 10;
     @RangeConstraint(min = 0, max = 200)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public int flashBangFadeInTicks = 10;
+    public int flashbangFadeInTicks = 10;
     @RangeConstraint(min = 1, max = 200)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public int flashBangHoldTicks = 100;
+    public int flashbangHoldTicks = 100;
     @RangeConstraint(min = 0, max = 200)
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public int flashBangFadeOutTicks = 10;
-    public boolean flashBangJesus = false;
+    public int flashbangFadeOutTicks = 10;
+    public boolean flashbangJesus = false;
     @Sync(Option.SyncMode.OVERRIDE_CLIENT)
-    public int flashBangColor = 0xFFFFFF; // RGB color of the flash overlay
+    public int flashbangColor = 0xFFFFFF; // RGB color of the flash overlay
     @RangeConstraint(min = 0.01f, max = 1.f)
-    public float flashBangVolume = 1.0f; // 0.0 .. 1.0
+    public float flashbangVolume = 1.0f; // 0.0 .. 1.0
 
     @SectionHeader("Beeping")
     public boolean beeping = true;

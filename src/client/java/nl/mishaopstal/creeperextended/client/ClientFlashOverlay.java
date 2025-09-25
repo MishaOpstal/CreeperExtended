@@ -1,18 +1,13 @@
 // ClientFlashOverlay.java (client-only utility)
 package nl.mishaopstal.creeperextended.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.texture.Sprite;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -83,7 +78,7 @@ public final class ClientFlashOverlay {
         long worldTime = client.world.getTime();
 
         if (inst == null) {
-            // Effect gone: clear signature to allow next real trigger
+            // Effect gone: clear signature to allow the next real trigger
             lastEffectEndTickSig = -1L;
             lastEffectAmplifierSig = -1;
             return;
@@ -95,9 +90,9 @@ public final class ClientFlashOverlay {
         boolean isNewEffect = (amp != lastEffectAmplifierSig) || (effectEndTickNow > lastEffectEndTickSig + 1L);
         if (isNewEffect) {
             // Determine base phase lengths from config and amplifier
-            int baseFadeIn = amp > 0 ? amp : CreeperExtended.getFlashBangFadeInTicks();
-            int baseHold = CreeperExtended.getFlashBangHold();
-            int baseFadeOut = CreeperExtended.getFlashBangFadeOutTicks();
+            int baseFadeIn = amp > 0 ? amp : CreeperExtended.getFlashbangFadeInTicks();
+            int baseHold = CreeperExtended.getFlashbangHold();
+            int baseFadeOut = CreeperExtended.getFlashbangFadeOutTicks();
             baseFadeIn = Math.max(0, baseFadeIn);
             baseHold = Math.max(0, baseHold);
             baseFadeOut = Math.max(0, baseFadeOut);
@@ -130,10 +125,10 @@ public final class ClientFlashOverlay {
             fadeInTicks = tFi;
             hold = tHo;
             fadeOutTicks = tFo;
-            colorRGB = CreeperExtended.getFlashBangColor();
+            colorRGB = CreeperExtended.getFlashbangColor();
 
             flashing = (fadeInTicks + hold + fadeOutTicks) > 0;
-            client.player.playSound(SoundEvent.of(Identifier.of("creeperextended:explosion_ringing")), CreeperExtended.CONFIG.flashBangVolume(), 1.0f);
+            client.player.playSound(SoundEvent.of(Identifier.of("creeperextended:explosion_ringing")), CreeperExtended.CONFIG.flashbangVolume(), 1.0f);
 
             // Update signature to block retrigger during the same effect instance
             lastEffectAmplifierSig = amp;
@@ -192,8 +187,8 @@ public final class ClientFlashOverlay {
         int baseColor = (colorRGB & 0xFFFFFF);
         int mainColor = (intAlpha << 24) | baseColor;
 
-        // Main overlay, if flashBangJesus is enabled, then show the flashbang_overlay, if not then use the drawContext.fill instead
-        if (CreeperExtended.isFlashBangJesusEnabled()) {
+        // Main overlay, if flashbangJesus is enabled, then show the flashbang_overlay, if not then use the drawContext.fill instead
+        if (CreeperExtended.isFlashbangJesusEnabled()) {
             // Show JESUS flashbang overlay
             Identifier texture = Identifier.of("creeperextended", "textures/gui/flashbang-overlay.png");
             // renderLayer, texture, x, y, u, v, width, height, textureWidth, textureHeight

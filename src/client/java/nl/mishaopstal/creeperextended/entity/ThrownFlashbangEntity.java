@@ -1,20 +1,25 @@
 package nl.mishaopstal.creeperextended.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import nl.mishaopstal.creeperextended.CreeperExtended;
 import nl.mishaopstal.creeperextended.ModEntityTypes;
+import org.spongepowered.asm.mixin.Unique;
 
 public class ThrownFlashbangEntity extends ThrownItemEntity {
     private static final double BOUNCE_COEFFICIENT = 0.6; // energy retained on the impacted axis
@@ -134,7 +139,27 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
 
                 if (stableTicks >= STILL_TICKS_REQUIRED) {
                     CreeperExtended.LOGGER.info("Flashbang is resting.");
-                    // You could trigger effects here if you want (like detonation).
+                    boolean doFlash = CreeperExtended.CONFIG.flashbangEnabled();
+
+                    int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashbangFadeInTicks(), 0, 127);
+                    int fadeOutTicks = CreeperExtended.getFlashbangFadeOutTicks();
+                    int radius = CreeperExtended.CONFIG.flashbangRadius();
+                    int duration = CreeperExtended.CONFIG.flashbangHoldTicks();
+                    double radiusSq = (double)radius * (double)radius;
+                    int totalDuration = duration + fadeOutTicks + fadeInTicks;
+
+                    if (getWorld() instanceof ServerWorld serverWorld) {
+                        if (doFlash) {
+                            for (var p : serverWorld.getPlayers(player -> player.squaredDistanceTo(this) <= radiusSq)) {
+                                if (eyePathToTargetClear(p, this) && isLookingAt(p, this)) {
+                                    p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), totalDuration, fadeInTicks, false, false, false));
+                                    CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", this.getId(), p.getName().getString(), radius, totalDuration);
+                                }
+                            }
+                        }
+                    }
+
+                    this.discard();
                 }
             }
         }
@@ -143,5 +168,20 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
     @Override
     protected double getGravity() {
         return 0.03F;
+    }
+
+    @Unique
+    private static boolean isLookingAt(LivingEntity viewer, Entity target) {
+        var toTarget = target.getPos().add(0, target.getStandingEyeHeight(), 0).subtract(viewer.getPos().add(0, viewer.getStandingEyeHeight(), 0)).normalize();
+        var look = viewer.getRotationVec(1.0f).normalize();
+        return look.dotProduct(toTarget) > 0.7; // ~45 degrees (general direction)
+    }
+
+    private static boolean eyePathToTargetClear(LivingEntity viewer, Entity target) {
+        var from = viewer.getCameraPosVec(1.0f);
+        var to = target.getPos().add(0, target.getStandingEyeHeight(), 0);
+        var world = viewer.getWorld();
+        var ray = world.raycast(new net.minecraft.world.RaycastContext(from, to, net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, viewer));
+        return ray.getType() == HitResult.Type.MISS;
     }
 }

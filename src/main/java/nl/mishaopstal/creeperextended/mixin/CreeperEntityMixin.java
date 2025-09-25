@@ -9,7 +9,6 @@ import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -20,7 +19,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.registry.entry.RegistryEntry;
 
 /**
  * Server-side fuse-time behavior: spinning state, beeps, and special effects.
@@ -60,20 +58,20 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
             creeperextended$beepCounter = 0;
             creeperextended$spinCyclesCompleted = 0;
             creeperextended$effectDone = false;
-            CreeperExtended.LOGGER.info("[CreeperExtended] Spin START entityId={} pos=({}, {}, {})", self.getId(), String.format("%.2f", self.getX()), String.format("%.2f", self.getY()), String.format("%.2f", self.getZ()));
+            CreeperExtended.LOGGER.debug("[CreeperExtended] Spin START entityId={} pos=({}, {}, {})", self.getId(), String.format("%.2f", self.getX()), String.format("%.2f", self.getY()), String.format("%.2f", self.getZ()));
         } else if ((!charging || !spinEnabled) && creeperextended$spinActive) {
             // reset when disarmed or spin disabled
             creeperextended$spinActive = false;
             creeperextended$spinSpeedRps = 0f;
             creeperextended$spinCyclesCompleted = 0;
-            CreeperExtended.LOGGER.info("[CreeperExtended] Spin STOP entityId={}", self.getId());
+            CreeperExtended.LOGGER.debug("[CreeperExtended] Spin STOP entityId={}", self.getId());
         }
 
         // Throttled state log
         if (creeperextended$spinActive) {
             creeperextended$debugTickCounter++;
             if ((creeperextended$debugTickCounter % 10) == 0) {
-                CreeperExtended.LOGGER.info("[CreeperExtended] Spin tick id={} fuseSpeed={} rps={} angle={}", self.getId(), String.format("%.2f", fuseSpeed), String.format("%.2f", creeperextended$spinSpeedRps), String.format("%.1f", creeperextended$spinAngle));
+                CreeperExtended.LOGGER.debug("[CreeperExtended] Spin tick id={} fuseSpeed={} rps={} angle={}", self.getId(), String.format("%.2f", fuseSpeed), String.format("%.2f", creeperextended$spinSpeedRps), String.format("%.1f", creeperextended$spinAngle));
             }
         }
 
@@ -122,7 +120,7 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                         creeperextended$beepCounter++;
                         self.playSound(SoundEvent.of(Identifier.of("creeperextended:beep")), volume, 1.0f);
                     }
-                    CreeperExtended.LOGGER.info("[CreeperExtended] BeepCycle id={} cycle={} beepsThisCycle={} totalBeeps={} vol={} base={} inc={}"
+                    CreeperExtended.LOGGER.debug("[CreeperExtended] BeepCycle id={} cycle={} beepsThisCycle={} totalBeeps={} vol={} base={} inc={}"
                             , self.getId(), creeperextended$spinCyclesCompleted, beepsThisCycle, creeperextended$beepCounter, String.format("%.2f", volume), baseBeepsPerCycle, incPerCycle);
                     creeperextended$spinCyclesCompleted++;
                 }
@@ -140,28 +138,30 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                 if (self.getWorld() instanceof ServerWorld serverWorld) {
                     // Apply flashbang-style effects at the moment of explosion
                     boolean blindedAny = false;
-                    boolean doFlash = CreeperExtended.CONFIG.flashBang();
-                    int radius = CreeperExtended.CONFIG.flashBangRadius();
-                    int duration = CreeperExtended.CONFIG.flashBangHoldTicks();
+
+                    boolean doFlash = CreeperExtended.CONFIG.flashbangEnabled();
+                    boolean doCreeperFlash = CreeperExtended.CONFIG.creeperFlashbang();
+                    int radius = CreeperExtended.CONFIG.flashbangRadius();
+                    int duration = CreeperExtended.CONFIG.flashbangHoldTicks();
                     double radiusSq = (double)radius * (double)radius;
 
-                    if (doFlash) {
+                    if (doFlash && doCreeperFlash) {
                         for (var p : serverWorld.getPlayers(player -> player.squaredDistanceTo(self) <= radiusSq)) {
                             if (p.canSee(self) && isLookingAt(p, self)) {
                                 blindedAny = true;
                                 // Use only our custom Flashbang effect to drive the client-side overlay.
                                 // Encode fade-in ticks in the amplifier (capped to 127 for safety).
-                                int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashBangFadeInTicks(), 0, 127);
-                                int fadeOutTicks = CreeperExtended.getFlashBangFadeOutTicks();
+                                int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashbangFadeInTicks(), 0, 127);
+                                int fadeOutTicks = CreeperExtended.getFlashbangFadeOutTicks();
                                 int totalDuration = duration + fadeOutTicks + fadeInTicks;
                                 p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), totalDuration, fadeInTicks, false, false, false));
-                                CreeperExtended.LOGGER.info("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", self.getId(), p.getName().getString(), radius, totalDuration);
+                                CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", self.getId(), p.getName().getString(), radius, totalDuration);
                             }
                         }
                     }
 
                     if (!blindedAny && CreeperExtended.CONFIG.showParticles()) {
-                        CreeperExtended.LOGGER.info("[CreeperExtended] Effect TRIGGER id={} action=PARTICLES", self.getId());
+                        CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=PARTICLES", self.getId());
                         for (int i = 0; i < 40; i++) {
                             double dx = (serverWorld.getRandom().nextDouble() - 0.5) * 0.6;
                             double dy = serverWorld.getRandom().nextDouble() * 0.6 + 0.2;
@@ -175,7 +175,7 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
                     tnt.setFuse(0);
                     serverWorld.spawnEntity(tnt);
                     String reason = timeout ? "timeout" : "delay";
-                    CreeperExtended.LOGGER.info("[CreeperExtended] Explosion EXECUTE id={} reason={} elapsed={} requiredDelay={}", self.getId(), reason, elapsed, creeperextended$requiredExplosionDelayTicks);
+                    CreeperExtended.LOGGER.debug("[CreeperExtended] Explosion EXECUTE id={} reason={} elapsed={} requiredDelay={}", self.getId(), reason, elapsed, creeperextended$requiredExplosionDelayTicks);
                     self.discard();
                 }
                 creeperextended$pendingExplosion = false;
@@ -193,7 +193,7 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
             int delayTicks = Math.max(0, CreeperExtended.getExplosionDelayTicks());
             // Clamp to safety cap
             creeperextended$requiredExplosionDelayTicks = Math.min(delayTicks, creeperextended$EXPLOSION_MAX_DELAY_TICKS);
-            CreeperExtended.LOGGER.info("[CreeperExtended] Explosion SCHEDULED id={} age={} delayTicks={} (cap={})", self.getId(), self.age, creeperextended$requiredExplosionDelayTicks, creeperextended$EXPLOSION_MAX_DELAY_TICKS);
+            CreeperExtended.LOGGER.debug("[CreeperExtended] Explosion SCHEDULED id={} age={} delayTicks={} (cap={})", self.getId(), self.age, creeperextended$requiredExplosionDelayTicks, creeperextended$EXPLOSION_MAX_DELAY_TICKS);
         }
         ci.cancel();
     }
