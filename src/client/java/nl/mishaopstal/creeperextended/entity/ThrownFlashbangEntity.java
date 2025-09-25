@@ -46,7 +46,7 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
     }
 
     private static ItemStack getFlashbangItemStack() {
-        // Get the flashbang item from registry to avoid circular dependency
+        // Get the flashbang item from the registry to avoid circular dependency
         Item flashbangItem = Registries.ITEM.get(Identifier.of(CreeperExtended.MOD_ID, "flashbang"));
         return new ItemStack(flashbangItem);
     }

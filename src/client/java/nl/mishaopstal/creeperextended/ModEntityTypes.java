@@ -21,7 +21,7 @@ public class ModEntityTypes {
             EntityType.Builder.<ThrownFlashbangEntity>create(ThrownFlashbangEntity::new, SpawnGroup.MISC)
                     .dimensions(0.25F, 0.25F)
                     .maxTrackingRange(4)
-                    .trackingTickInterval(10)
+                    .trackingTickInterval(1)
                     .build(THROWN_FLASHBANG_KEY)
     );
 
