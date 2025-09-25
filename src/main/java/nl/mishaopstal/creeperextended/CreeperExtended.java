@@ -217,12 +217,14 @@ public class CreeperExtended implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Starting Creeper Extended...");
+        LOGGER.info("Initializing Creeper Extended (Main)");
 
         // Initialize and register status effects
         Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "flashbang"), FLASHBANG_EFFECT);
 
         // Client hooks are registered via the client entrypoint (CreeperExtendedClient).
         // Avoid touching client-only classes here, to not crash on dedicated servers.
+
+        LOGGER.info("Creeper Extended (Main) initialized successfully");
     }
 }

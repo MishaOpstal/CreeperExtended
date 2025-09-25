@@ -15,20 +15,24 @@ import nl.mishaopstal.creeperextended.entity.ThrownFlashbangEntity;
 
 public class FlashbangItem extends Item {
     static Identifier id = Identifier.of(CreeperExtended.MOD_ID, "flashbang");
-    static RegistryKey<EntityType<?>> key = RegistryKey.of(RegistryKeys.ENTITY_TYPE, id);
+    static RegistryKey<EntityType<?>> entityKey = RegistryKey.of(RegistryKeys.ENTITY_TYPE, id);
+
+    // Create a RegistryKey for the item
+    static RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, id);
 
     public static EntityType<ThrownFlashbangEntity> FLASHBANG_ENTITY_TYPE = EntityType.Builder
             .<ThrownFlashbangEntity>create(ThrownFlashbangEntity::new, SpawnGroup.MISC)
             .dimensions(0.25F, 0.25F)
             .maxTrackingRange(4)
             .trackingTickInterval(10)
-            .build(key);
+            .build(entityKey);
 
-    // Register the item tied to the custom Item class
+    // Register the item with the registryKey set in Settings
     public static final Item ITEM = Registry.register(
             Registries.ITEM,
-            Identifier.of(CreeperExtended.MOD_ID, "flashbang"),
-            new FlashbangItem(new Item.Settings())
+            itemKey,  // Use the RegistryKey here instead of Identifier
+            new FlashbangItem(new Item.Settings()
+                    .registryKey(itemKey))  // Set the registry key in settings
     );
 
     public FlashbangItem(Settings settings) {
