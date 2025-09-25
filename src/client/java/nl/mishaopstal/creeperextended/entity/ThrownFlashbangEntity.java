@@ -135,10 +135,12 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
                     stableTicks = 0;
                     refX = this.getX();
                     refY = this.getY();
+
+                    CreeperExtended.LOGGER.debug("Flashbang moved, resetting stability counter, new ref=({}, {})", MathHelper.floor(refX), MathHelper.floor(refY));
                 }
 
                 if (stableTicks >= STILL_TICKS_REQUIRED) {
-                    CreeperExtended.LOGGER.info("Flashbang is resting.");
+                    CreeperExtended.LOGGER.debug("Flashbang is ready to detonate after {} ticks", lifetimeTicks);
                     boolean doFlash = CreeperExtended.CONFIG.flashbangEnabled();
 
                     int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashbangFadeInTicks(), 0, 127);
@@ -151,7 +153,7 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
                     if (getWorld() instanceof ServerWorld serverWorld) {
                         if (doFlash) {
                             for (var p : serverWorld.getPlayers(player -> player.squaredDistanceTo(this) <= radiusSq)) {
-                                if (eyePathToTargetClear(p, this) && isLookingAt(p, this)) {
+                                if (eyePathToTargetClear(p, this)) {
                                     p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), totalDuration, fadeInTicks, false, false, false));
                                     CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", this.getId(), p.getName().getString(), radius, totalDuration);
                                 }
@@ -174,14 +176,59 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
     private static boolean isLookingAt(LivingEntity viewer, Entity target) {
         var toTarget = target.getPos().add(0, target.getStandingEyeHeight(), 0).subtract(viewer.getPos().add(0, viewer.getStandingEyeHeight(), 0)).normalize();
         var look = viewer.getRotationVec(1.0f).normalize();
-        return look.dotProduct(toTarget) > 0.7; // ~45 degrees (general direction)
+        return look.dotProduct(toTarget) > 0.65; // ~49 degrees (a bit more lenient)
     }
 
+    @Unique
     private static boolean eyePathToTargetClear(LivingEntity viewer, Entity target) {
-        var from = viewer.getCameraPosVec(1.0f);
-        var to = target.getPos().add(0, target.getStandingEyeHeight(), 0);
+        // Robust line-of-sight that tolerates the flashbang clipping slightly into blocks
+        // but still prevents triggering through real walls.
         var world = viewer.getWorld();
-        var ray = world.raycast(new net.minecraft.world.RaycastContext(from, to, net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, viewer));
-        return ray.getType() == HitResult.Type.MISS;
+
+        var from = viewer.getCameraPosVec(1.0f);
+        var toCenter = target.getPos().add(0, target.getStandingEyeHeight(), 0);
+        var dir = toCenter.subtract(from).normalize();
+
+        // Back the endpoint off slightly so rays don't terminate inside a block the grenade touches
+        var toBacked = toCenter.subtract(dir.multiply(0.25)); // 25 cm back toward viewer
+
+        var ray1 = world.raycast(new net.minecraft.world.RaycastContext(
+                from, toBacked,
+                net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
+                net.minecraft.world.RaycastContext.FluidHandling.NONE,
+                viewer));
+
+        if (ray1.getType() == HitResult.Type.MISS) {
+            return true;
+        }
+
+        // If we hit a block, accept if the hit is in the same block as the grenade (endpoint grazing)
+        if (ray1 instanceof BlockHitResult bhr1) {
+            if (bhr1.getBlockPos().equals(target.getBlockPos())) {
+                return true;
+            }
+            // Or if the hit is extremely close to the endpoint (floating-point/voxel edge cases)
+            var hitPos = Vec3d.ofCenter(bhr1.getBlockPos());
+            if (hitPos.squaredDistanceTo(toCenter) < 0.06) { // within ~24.5 cm
+                return true;
+            }
+        }
+
+        // Second attempt: nudge the endpoint slightly upward then back off again.
+        var toUp = toCenter.add(0, 0.2, 0).subtract(dir.multiply(0.25));
+        var ray2 = world.raycast(new net.minecraft.world.RaycastContext(
+                from, toUp,
+                net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
+                net.minecraft.world.RaycastContext.FluidHandling.NONE,
+                viewer));
+
+        if (ray2.getType() == HitResult.Type.MISS) {
+            return true;
+        }
+        if (ray2 instanceof BlockHitResult bhr2) {
+            return bhr2.getBlockPos().equals(target.getBlockPos());
+        }
+
+        return false;
     }
 }

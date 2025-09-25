@@ -10,5 +10,11 @@
     "sounds": [
       "creeperextended:explosion_ringing"
     ]
+  },
+  "am1_throwing_flashbang_02": {
+    "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_02",
+    "sounds": [
+      "creeperextended:am1_throwing_flashbang_02"
+    ]
   }
 }
