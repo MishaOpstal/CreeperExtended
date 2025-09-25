@@ -12,10 +12,10 @@ public class CreeperExtendedClient implements ClientModInitializer {
     public void onInitializeClient() {
         LOGGER.info("Initializing Creeper Extended (Client)");
 
-        // Register client overlays and callbacks
-        ClientFlashOverlay.initialize();
+        // Register game content first, then client overlays and callbacks
         ModEntityTypes.initialize();
         ModItems.initialize();
+        ClientFlashOverlay.initialize();
 
         LOGGER.info("Creeper Extended (Client) initialized successfully");
     }

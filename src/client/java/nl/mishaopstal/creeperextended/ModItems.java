@@ -13,11 +13,15 @@ import net.minecraft.util.Identifier;
 import nl.mishaopstal.creeperextended.item.FlashbangItem;
 
 public class ModItems {
-    // Register the flashbang item first
+    // Create a registry key for the item (needed by Item.Settings in 1.21+)
+    public static final RegistryKey<Item> FLASHBANG_ITEM_KEY =
+            RegistryKey.of(Registries.ITEM.getKey(), Identifier.of(CreeperExtended.MOD_ID, "flashbang"));
+
+    // Register the flashbang item first, providing the registry key in the settings
     public static final Item FLASHBANG_ITEM = Registry.register(
             Registries.ITEM,
-            Identifier.of(CreeperExtended.MOD_ID, "flashbang"),
-            new FlashbangItem(new Item.Settings())
+            FLASHBANG_ITEM_KEY,
+            new FlashbangItem(new Item.Settings().registryKey(FLASHBANG_ITEM_KEY))
     );
 
     // Create a registry key for the item group
