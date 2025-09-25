@@ -1,6 +1,8 @@
 package nl.mishaopstal.creeperextended;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import nl.mishaopstal.creeperextended.client.ClientFlashOverlay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +17,8 @@ public class CreeperExtendedClient implements ClientModInitializer {
         // Register game content first, then client overlays and callbacks
         ModEntityTypes.initialize();
         ModItems.initialize();
+        ModEntities.initialize();
+
         ClientFlashOverlay.initialize();
 
         LOGGER.info("Creeper Extended (Client) initialized successfully");
