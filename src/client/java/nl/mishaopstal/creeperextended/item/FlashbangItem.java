@@ -3,14 +3,12 @@ package nl.mishaopstal.creeperextended.item;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import nl.mishaopstal.creeperextended.CreeperExtended;
 import nl.mishaopstal.creeperextended.entity.ThrownFlashbangEntity;
+import nl.mishaopstal.creeperextended.util.FlashbangHelper;
 
 public class FlashbangItem extends Item {
     public FlashbangItem(Settings settings) {
@@ -25,7 +23,7 @@ public class FlashbangItem extends Item {
             CreeperExtended.LOGGER.info("Flashbang being used by {}", user.getDisplayName());
 
             // play sound effect
-            world.playSound(null, user.getBlockPos(), SoundEvent.of(Identifier.of("creeperextended:am1_throwing_flashbang_02")), SoundCategory.PLAYERS);
+            FlashbangHelper.playThrowFlashbangSound(world, user.getBlockPos());
 
             // spawn projectile using the registered entity type
             ThrownFlashbangEntity flash = new ThrownFlashbangEntity(world, user);

@@ -11,10 +11,28 @@
       "creeperextended:explosion_ringing"
     ]
   },
+  "am1_throwing_flashbang_01": {
+    "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_01",
+    "sounds": [
+      "creeperextended:am1_throwing_flashbang_01"
+    ]
+  },
   "am1_throwing_flashbang_02": {
     "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_02",
     "sounds": [
       "creeperextended:am1_throwing_flashbang_02"
+    ]
+  },
+  "am1_throwing_flashbang_02_1": {
+    "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_02_1",
+    "sounds": [
+      "creeperextended:am1_throwing_flashbang_02_1"
+    ]
+  },
+  "am1_throwing_flashbang_03": {
+    "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_03",
+    "sounds": [
+      "creeperextended:am1_throwing_flashbang_03"
     ]
   }
 }

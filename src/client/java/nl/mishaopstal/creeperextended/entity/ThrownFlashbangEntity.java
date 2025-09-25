@@ -1,13 +1,12 @@
 package nl.mishaopstal.creeperextended.entity;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -19,7 +18,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import nl.mishaopstal.creeperextended.CreeperExtended;
 import nl.mishaopstal.creeperextended.ModEntityTypes;
-import org.spongepowered.asm.mixin.Unique;
+import nl.mishaopstal.creeperextended.util.FlashbangHelper;
+import nl.mishaopstal.creeperextended.util.ModHelpers;
 
 public class ThrownFlashbangEntity extends ThrownItemEntity {
     private static final double BOUNCE_COEFFICIENT = 0.6; // energy retained on the impacted axis
@@ -99,15 +99,19 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
                     this.getZ() + side.getOffsetZ() * 0.001);
             this.fallDistance = 0.0F;
 
-            // Update reference anchor to current position
-            this.refX = this.getX();
-            this.refY = this.getY();
-            this.stableTicks = 0; // reset stability counter
+            // Positional tracking moved to tick() to avoid relying on collision callbacks
         } else if (hitResult.getType() == HitResult.Type.ENTITY) {
             // Lightly bounce back from entities
             if (hitResult instanceof EntityHitResult) {
                 Vec3d v = this.getVelocity();
                 this.setVelocity(v.multiply(-0.5));
+            }
+
+            // Apply slowness effect to hit entity if applicable
+            if (hitResult instanceof EntityHitResult ehr) {
+                if (ehr.getEntity() instanceof LivingEntity entity) {
+                    FlashbangHelper.applySlownessEffect(entity, 65, 1);
+                }
             }
         }
     }
@@ -118,117 +122,88 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
 
         if (!this.getWorld().isClient) {
             lifetimeTicks++;
-            if (lifetimeTicks >= MAX_LIFETIME_TICKS) {
-                this.discard();
-                return;
+            // Ensure the reference anchor is initialized without relying on collisions
+            if (Double.isNaN(refX) || Double.isNaN(refY)) {
+                refX = this.getX();
+                refY = this.getY();
+                stableTicks = 0;
             }
 
-            if (!Double.isNaN(refX) && !Double.isNaN(refY)) {
-                // Check if we're within stable bounds relative to last collision point
-                boolean withinX = Math.abs(this.getX() - refX) <= STILL_X_RANGE;
-                boolean withinY = Math.abs(this.getY() - refY) <= STILL_Y_RANGE;
+            // Determine if the grenade is effectively at rest on the ground
+            Vec3d vel = this.getVelocity();
 
-                if (withinX && withinY) {
-                    stableTicks++;
-                } else {
-                    // reset if wandered too far
-                    stableTicks = 0;
-                    refX = this.getX();
-                    refY = this.getY();
+            // Check drift relative to the reference anchor
+            boolean withinX = Math.abs(this.getX() - refX) <= STILL_X_RANGE;
+            boolean withinY = Math.abs(this.getY() - refY) <= STILL_Y_RANGE;
 
-                    CreeperExtended.LOGGER.debug("Flashbang moved, resetting stability counter, new ref=({}, {})", MathHelper.floor(refX), MathHelper.floor(refY));
-                }
+            if (withinX && withinY) {
+                stableTicks++;
+            } else {
+                // If we drift too far, move the anchor to the new area
+                refX = this.getX();
+                refY = this.getY();
+                CreeperExtended.LOGGER.debug("Flashbang moved, resetting stability counter, new ref=({}, {})", MathHelper.floor(refX), MathHelper.floor(refY));
+                stableTicks = 0;
+            }
 
-                if (stableTicks >= STILL_TICKS_REQUIRED) {
-                    CreeperExtended.LOGGER.debug("Flashbang is ready to detonate after {} ticks", lifetimeTicks);
-                    boolean doFlash = CreeperExtended.CONFIG.flashbangEnabled();
+            CreeperExtended.LOGGER.debug("Flashbang tick {} pos=({}, {}, {}) vel=({}, {}, {}) stable={} (ref=({}, {}))",
+                    lifetimeTicks,
+                    MathHelper.floor(this.getX()), MathHelper.floor(this.getY()), MathHelper.floor(this.getZ()),
+                    String.format("%.3f", vel.x), String.format("%.3f", vel.y), String.format("%.3f", vel.z),
+                    stableTicks,
+                    MathHelper.floor(refX), MathHelper.floor(refY)
+            );
 
-                    int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashbangFadeInTicks(), 0, 127);
-                    int fadeOutTicks = CreeperExtended.getFlashbangFadeOutTicks();
-                    int radius = CreeperExtended.CONFIG.flashbangRadius();
-                    int duration = CreeperExtended.CONFIG.flashbangHoldTicks();
-                    double radiusSq = (double)radius * (double)radius;
-                    int totalDuration = duration + fadeOutTicks + fadeInTicks;
+            if (lifetimeTicks >= MAX_LIFETIME_TICKS) {
+                stableTicks = STILL_TICKS_REQUIRED;
+                CreeperExtended.LOGGER.debug("Flashbang reached max lifetime of {} ticks, forcing detonation", MAX_LIFETIME_TICKS);
+            }
 
-                    if (getWorld() instanceof ServerWorld serverWorld) {
-                        if (doFlash) {
-                            for (var p : serverWorld.getPlayers(player -> player.squaredDistanceTo(this) <= radiusSq)) {
-                                if (eyePathToTargetClear(p, this)) {
-                                    p.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT), totalDuration, fadeInTicks, false, false, false));
-                                    CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", this.getId(), p.getName().getString(), radius, totalDuration);
-                                }
+            if (stableTicks >= STILL_TICKS_REQUIRED) {
+                CreeperExtended.LOGGER.debug("Flashbang is ready to detonate after {} ticks", lifetimeTicks);
+                boolean doFlash = CreeperExtended.CONFIG.flashbangEnabled();
+
+                int fadeInTicks = MathHelper.clamp(CreeperExtended.getFlashbangFadeInTicks(), 0, 127);
+                int fadeOutTicks = CreeperExtended.getFlashbangFadeOutTicks();
+                int radius = CreeperExtended.CONFIG.flashbangRadius();
+                int duration = CreeperExtended.CONFIG.flashbangHoldTicks();
+                double radiusSq = (double)radius * (double)radius;
+                int totalDuration = duration + fadeOutTicks + fadeInTicks;
+
+                if (getWorld() instanceof ServerWorld serverWorld) {
+                    if (doFlash) {
+                        // Play explosion sound
+                        FlashbangHelper.playExplosionSound(serverWorld, this.getBlockPos());
+                        for (var p : serverWorld.getPlayers(player -> player.squaredDistanceTo(this) <= radiusSq)) {
+                            if (ModHelpers.isLookingAt(p, this) && ModHelpers.eyePathToTargetClear(p, this)) {
+                                FlashbangHelper.applyFlashEffect(p, duration, fadeInTicks);
+                                CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=FLASHBANG target={} r={} d={}", this.getId(), p.getName().getString(), radius, totalDuration);
+                            }
+                        }
+
+                        // Now also affect mobs by giving them slowness effect
+                        for (var mob : serverWorld.getEntitiesByClass(LivingEntity.class, this.getBoundingBox().expand(radius),
+                                entity -> !(entity instanceof ServerPlayerEntity) && entity.isAlive())) {
+                            if (ModHelpers.isLookingAt(mob, this) && ModHelpers.eyePathToTargetClear(mob, this)) {
+                                // Slowness effect duration is shorter for mobs
+                                int mobDuration = MathHelper.clamp(totalDuration / 2, 1, 127);
+                                FlashbangHelper.applySlownessEffect(mob, mobDuration, 1);
+                                CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=SLOWNESS target={} r={} d={}", this.getId(), mob.getType().getName().getString(), radius, mobDuration);
                             }
                         }
                     }
-
-                    this.discard();
                 }
+
+                this.discard();
             }
+
+            // Decelerate a bit
+            this.setVelocity(vel.x * AIR_DRAG, vel.y - getGravity(), vel.z * AIR_DRAG);
         }
     }
 
     @Override
     protected double getGravity() {
         return 0.03F;
-    }
-
-    @Unique
-    private static boolean isLookingAt(LivingEntity viewer, Entity target) {
-        var toTarget = target.getPos().add(0, target.getStandingEyeHeight(), 0).subtract(viewer.getPos().add(0, viewer.getStandingEyeHeight(), 0)).normalize();
-        var look = viewer.getRotationVec(1.0f).normalize();
-        return look.dotProduct(toTarget) > 0.65; // ~49 degrees (a bit more lenient)
-    }
-
-    @Unique
-    private static boolean eyePathToTargetClear(LivingEntity viewer, Entity target) {
-        // Robust line-of-sight that tolerates the flashbang clipping slightly into blocks
-        // but still prevents triggering through real walls.
-        var world = viewer.getWorld();
-
-        var from = viewer.getCameraPosVec(1.0f);
-        var toCenter = target.getPos().add(0, target.getStandingEyeHeight(), 0);
-        var dir = toCenter.subtract(from).normalize();
-
-        // Back the endpoint off slightly so rays don't terminate inside a block the grenade touches
-        var toBacked = toCenter.subtract(dir.multiply(0.25)); // 25 cm back toward viewer
-
-        var ray1 = world.raycast(new net.minecraft.world.RaycastContext(
-                from, toBacked,
-                net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
-                net.minecraft.world.RaycastContext.FluidHandling.NONE,
-                viewer));
-
-        if (ray1.getType() == HitResult.Type.MISS) {
-            return true;
-        }
-
-        // If we hit a block, accept if the hit is in the same block as the grenade (endpoint grazing)
-        if (ray1 instanceof BlockHitResult bhr1) {
-            if (bhr1.getBlockPos().equals(target.getBlockPos())) {
-                return true;
-            }
-            // Or if the hit is extremely close to the endpoint (floating-point/voxel edge cases)
-            var hitPos = Vec3d.ofCenter(bhr1.getBlockPos());
-            if (hitPos.squaredDistanceTo(toCenter) < 0.06) { // within ~24.5 cm
-                return true;
-            }
-        }
-
-        // Second attempt: nudge the endpoint slightly upward then back off again.
-        var toUp = toCenter.add(0, 0.2, 0).subtract(dir.multiply(0.25));
-        var ray2 = world.raycast(new net.minecraft.world.RaycastContext(
-                from, toUp,
-                net.minecraft.world.RaycastContext.ShapeType.COLLIDER,
-                net.minecraft.world.RaycastContext.FluidHandling.NONE,
-                viewer));
-
-        if (ray2.getType() == HitResult.Type.MISS) {
-            return true;
-        }
-        if (ray2 instanceof BlockHitResult bhr2) {
-            return bhr2.getBlockPos().equals(target.getBlockPos());
-        }
-
-        return false;
     }
 }

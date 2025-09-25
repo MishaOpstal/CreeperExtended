@@ -13,11 +13,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import nl.mishaopstal.creeperextended.CreeperExtended;
+import nl.mishaopstal.creeperextended.util.FlashbangHelper;
+import nl.mishaopstal.creeperextended.util.ModHelpers;
 
 public final class ClientFlashOverlay {
 
@@ -128,7 +131,6 @@ public final class ClientFlashOverlay {
             colorRGB = CreeperExtended.getFlashbangColor();
 
             flashing = (fadeInTicks + hold + fadeOutTicks) > 0;
-            client.player.playSound(SoundEvent.of(Identifier.of("creeperextended:explosion_ringing")), CreeperExtended.CONFIG.flashbangVolume(), 1.0f);
 
             // Update signature to block retrigger during the same effect instance
             lastEffectAmplifierSig = amp;
