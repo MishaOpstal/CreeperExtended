@@ -170,7 +170,7 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
 
                         for (var mob : serverWorld.getEntitiesByClass(LivingEntity.class, self.getBoundingBox().expand(radius),
                                 entity -> !(entity instanceof ServerPlayerEntity) && entity.isAlive())) {
-                            if (mob.canSee(self) && ModHelpers.isLookingAt(mob, self)) {
+                            if (ModHelpers.isLookingAt(mob, self)) {
                                 // Slowness effect duration is shorter for mobs
                                 int mobDuration = MathHelper.clamp(totalDuration / 2, 1, 127);
                                 FlashbangHelper.applySlownessEffect(mob, mobDuration, 1);
