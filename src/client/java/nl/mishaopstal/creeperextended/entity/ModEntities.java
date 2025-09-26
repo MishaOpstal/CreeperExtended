@@ -1,4 +1,4 @@
-package nl.mishaopstal.creeperextended;
+package nl.mishaopstal.creeperextended.entity;
 
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.render.entity.FlyingItemEntityRenderer;

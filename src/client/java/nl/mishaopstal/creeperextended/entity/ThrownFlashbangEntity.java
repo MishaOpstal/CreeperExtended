@@ -17,7 +17,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import nl.mishaopstal.creeperextended.CreeperExtended;
-import nl.mishaopstal.creeperextended.ModEntityTypes;
 import nl.mishaopstal.creeperextended.util.FlashbangHelper;
 import nl.mishaopstal.creeperextended.util.ModHelpers;
 

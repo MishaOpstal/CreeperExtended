@@ -1,8 +1,11 @@
 package nl.mishaopstal.creeperextended.item;
 
+import net.minecraft.component.type.TooltipDisplayComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
@@ -10,9 +13,16 @@ import nl.mishaopstal.creeperextended.CreeperExtended;
 import nl.mishaopstal.creeperextended.entity.ThrownFlashbangEntity;
 import nl.mishaopstal.creeperextended.util.FlashbangHelper;
 
+import java.util.function.Consumer;
+
 public class FlashbangItem extends Item {
     public FlashbangItem(Settings settings) {
         super(settings);
+    }
+
+    @Override
+    public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
+        textConsumer.accept(Text.translatable("item.creeperextended.flashbang.tooltip"));
     }
 
     @Override

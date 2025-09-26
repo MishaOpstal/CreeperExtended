@@ -9,7 +9,8 @@
   "text.config.creeper-extended-config.option.showParticles": "Show Particles",
 
   "text.config.creeper-extended-config.section.Flashbang": "Flashbang",
-  "text.config.creeper-extended-config.option.flashbang": "Flashbang",
+  "text.config.creeper-extended-config.option.flashbangEnabled": "Enable Flashbang",
+  "text.config.creeper-extended-config.option.creeperFlashbang": "Creeper Flashbang",
   "text.config.creeper-extended-config.option.flashbangRadius": "Flashbang Radius",
   "text.config.creeper-extended-config.option.flashbangFadeInTicks": "Flashbang Fade In (Ticks)",
   "text.config.creeper-extended-config.option.flashbangHoldTicks": "Flashbang Hold (Ticks)",
@@ -22,13 +23,15 @@
   "text.config.creeper-extended-config.section.Beeping": "Beeping",
   "text.config.creeper-extended-config.option.beeping": "Beeping",
   "text.config.creeper-extended-config.option.beepAmountPerFullSpinCycle": "Beep Amount Per Full Spin Cycle",
-  "text.config.creeper-extended-config.option.beepAmountIncreasePerFullSpinCycle": "How much to increase the beep amount per 2 full spin cycles",
+  "text.config.creeper-extended-config.option.beepAmountIncreasePerFullSpinCycle": "Beep increase per 2 spins",
   "text.config.creeper-extended-config.option.beepVolume": "Beep Volume",
 
   "text.sounds.creeperextended.beep": "Beep",
 
-  "effect.creeperextended.flashbang": "Flashbang",
+  "effect.creeperextended.flashbang_effect": "Flashbang",
   "item.creeperextended.flashbang": "Flashbang",
+  "item.creeperextended.flashbang.tooltip": "A non-lethal flashbang that temporarily slows down entities.",
+  "item.creeperextended.sember_music_disc": "Sember",
 
-  "item.group.creeperextended": "Creeper Extended"
+  "item.group.creeperextended.items": "Creeper Extended Items"
 }

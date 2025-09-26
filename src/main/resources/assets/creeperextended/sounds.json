@@ -2,37 +2,46 @@
   "beep": {
     "subtitle": "text.sounds.creeperextended.beep",
     "sounds": [
-      "creeperextended:beep"
+      "creeperextended:bomb/beep"
     ]
   },
-  "explosion_ringing": {
-    "subtitle": "text.sounds.creeperextended.explosion_ringing",
+  "flashbang_detonate": {
+    "subtitle": "text.sounds.creeperextended.flashbang_detonate",
     "sounds": [
-      "creeperextended:explosion_ringing"
+      "creeperextended:flashbang/flashbang_detonate"
     ]
   },
   "am1_throwing_flashbang_01": {
     "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_01",
     "sounds": [
-      "creeperextended:am1_throwing_flashbang_01"
+      "creeperextended:flashbang/am1_throwing_flashbang_01"
     ]
   },
   "am1_throwing_flashbang_02": {
     "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_02",
     "sounds": [
-      "creeperextended:am1_throwing_flashbang_02"
+      "creeperextended:flashbang/am1_throwing_flashbang_02"
     ]
   },
   "am1_throwing_flashbang_02_1": {
     "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_02_1",
     "sounds": [
-      "creeperextended:am1_throwing_flashbang_02_1"
+      "creeperextended:flashbang/am1_throwing_flashbang_02_1"
     ]
   },
   "am1_throwing_flashbang_03": {
     "subtitle": "text.sounds.creeperextended.am1_throwing_flashbang_03",
     "sounds": [
-      "creeperextended:am1_throwing_flashbang_03"
+      "creeperextended:flashbang/am1_throwing_flashbang_03"
+    ]
+  },
+  "sember": {
+    "subtitle": "item.creeperextended.sember_music_disc",
+    "sounds": [
+      {
+        "name": "creeperextended:music/disc/sember",
+        "stream": true
+      }
     ]
   }
 }

@@ -13,14 +13,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import nl.mishaopstal.creeperextended.CreeperExtended;
-import nl.mishaopstal.creeperextended.util.FlashbangHelper;
-import nl.mishaopstal.creeperextended.util.ModHelpers;
 
 public final class ClientFlashOverlay {
 
