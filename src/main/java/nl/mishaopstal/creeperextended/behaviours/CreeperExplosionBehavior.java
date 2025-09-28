@@ -30,13 +30,13 @@ public class CreeperExplosionBehavior extends EntityExplosionBehavior {
     }
 
     public boolean getExplosionCausesFire() {
+        // Get the world
+        ServerWorld world = (ServerWorld) entity.getWorld();
+
         // Check if the creeper is charged
         if (!isCharged()) {
             return false;
         }
-
-        // Get the world
-        ServerWorld world = (ServerWorld) entity.getWorld();
 
         // Check if in swamp biome
         BlockPos entityPos = entity.getBlockPos();

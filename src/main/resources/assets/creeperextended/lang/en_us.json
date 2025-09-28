@@ -29,9 +29,12 @@
   "text.sounds.creeperextended.beep": "Beep",
 
   "effect.creeperextended.flashbang_effect": "Flashbang",
+  "effect.creeperextended.stunned_effect": "Stunned",
   "item.creeperextended.flashbang": "Flashbang",
   "item.creeperextended.flashbang.tooltip": "A non-lethal flashbang that temporarily slows down entities.",
   "item.creeperextended.sember_music_disc": "Sember",
+  "item.minecraft.splash_potion.effect.stun": "Splash Potion of Stun",
+  "item.minecraft.lingering_potion.effect.stun": "Lingering Potion of Stun",
 
   "item.group.creeperextended.items": "Creeper Extended Items"
 }

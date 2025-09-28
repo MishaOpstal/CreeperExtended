@@ -45,4 +45,12 @@ public class FlashbangHelper {
         RegistryEntry<StatusEffect> slownessEffect = StatusEffects.SLOWNESS;
         ModHelpers.applyStatusEffect(entity, slownessEffect, duration, amplifier);
     }
+
+    public static void applyStunnedEffect(LivingEntity entity, int duration, int amplifier) {
+        RegistryEntry<StatusEffect> stunnedEffect = Registries.STATUS_EFFECT
+                .getEntry(Identifier.of(CreeperExtended.MOD_ID, "stunned"))
+                .orElseThrow(() -> new IllegalStateException("Stunned effect not registered!"));
+
+        ModHelpers.applyStatusEffect(entity, stunnedEffect, duration, amplifier);
+    }
 }

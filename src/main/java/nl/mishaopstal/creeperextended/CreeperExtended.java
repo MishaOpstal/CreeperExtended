@@ -6,10 +6,14 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import nl.mishaopstal.creeperextended.effects.FlashbangStatusEffect;
+import nl.mishaopstal.creeperextended.effects.StunnedStatusEffect;
+import nl.mishaopstal.creeperextended.entity.ModEntityTypes;
+import nl.mishaopstal.creeperextended.item.ModItemGroups;
+import nl.mishaopstal.creeperextended.item.ModItems;
+import nl.mishaopstal.creeperextended.potion.ModPotions;
+import nl.mishaopstal.creeperextended.sound.ModSounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static net.minecraft.item.Items.register;
 
 public class CreeperExtended implements ModInitializer {
 
@@ -17,6 +21,7 @@ public class CreeperExtended implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final nl.mishaopstal.creeperextended.CreeperExtendedConfig CONFIG = nl.mishaopstal.creeperextended.CreeperExtendedConfig.createAndLoad();
     public static final StatusEffect FLASHBANG_EFFECT = new FlashbangStatusEffect();
+    public static final StatusEffect STUNNED_EFFECT = new StunnedStatusEffect();
 
     /**
      * Returns the configured explosion delay in ticks (20 ticks = 1s).
@@ -220,6 +225,16 @@ public class CreeperExtended implements ModInitializer {
 
         // Initialize and register status effects
         Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "flashbang_effect"), FLASHBANG_EFFECT);
+        Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "stunned_effect"), STUNNED_EFFECT);
+
+        // Register game content first, then client overlays and callbacks
+        ModItemGroups.initialize();
+        ModItems.initialize();
+
+        ModEntityTypes.initialize();
+
+        ModPotions.initialize();
+        ModSounds.initialize();
 
         // Client hooks are registered via the client entrypoint (CreeperExtendedClient).
         // Avoid touching client-only classes here, to not crash on dedicated servers.

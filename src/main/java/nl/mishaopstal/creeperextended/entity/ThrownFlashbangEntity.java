@@ -2,6 +2,7 @@ package nl.mishaopstal.creeperextended.entity;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.WardenEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -183,11 +184,14 @@ public class ThrownFlashbangEntity extends ThrownItemEntity {
                         // Now also affect mobs by giving them slowness effect
                         for (var mob : serverWorld.getEntitiesByClass(LivingEntity.class, this.getBoundingBox().expand(radius),
                                 entity -> !(entity instanceof ServerPlayerEntity) && entity.isAlive())) {
-                            if (ModHelpers.isLookingAt(mob, this) && ModHelpers.eyePathToTargetClear(mob, this)) {
-                                // Slowness effect duration is shorter for mobs
-                                int mobDuration = MathHelper.clamp(totalDuration / 2, 1, 127);
-                                FlashbangHelper.applySlownessEffect(mob, mobDuration, 1);
-                                CreeperExtended.LOGGER.debug("[CreeperExtended] Effect TRIGGER id={} action=SLOWNESS target={} r={} d={}", this.getId(), mob.getType().getName().getString(), radius, mobDuration);
+                            // Slowness effect duration is shorter for mobs
+                            int mobDuration = MathHelper.clamp(totalDuration / 2, 1, 127);
+                            FlashbangHelper.applySlownessEffect(mob, mobDuration, 1);
+
+                            // If the mob is a warden, stun it for a short duration
+                            if (mob instanceof WardenEntity warden) {
+                                int wardenStunDuration = MathHelper.clamp(totalDuration / 4, 1, 127);
+                                FlashbangHelper.applyStunnedEffect(warden, wardenStunDuration, 1);
                             }
                         }
                     }

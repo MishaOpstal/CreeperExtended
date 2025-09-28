@@ -59,6 +59,8 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
         float fuseSpeed = self.getFuseSpeed(); // server-side estimate used for flashing; 0..1
         boolean charging = self.isIgnited() || fuseSpeed > 0.01f;
         boolean spinEnabled = CreeperExtended.CONFIG.spinAnimation();
+
+        // If the creeper is no longer close enough to a player, reset everything
         if (charging && spinEnabled && !creeperextended$spinActive) {
             creeperextended$spinActive = true;
             creeperextended$spinAngle = 0f;
@@ -71,6 +73,11 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
             creeperextended$spinActive = false;
             creeperextended$spinSpeedRps = 0f;
             creeperextended$spinCyclesCompleted = 0;
+
+            // Make sure the pending explosion is not forgotten
+            creeperextended$pendingExplosion = false;
+            creeperextended$pendingExplosionStartAge = 0;
+            creeperextended$requiredExplosionDelayTicks = 0;
             CreeperExtended.LOGGER.debug("[CreeperExtended] Spin STOP entityId={}", self.getId());
         }
 
@@ -170,11 +177,9 @@ public abstract class CreeperEntityMixin implements ICreeperSpinAccessor {
 
                         for (var mob : serverWorld.getEntitiesByClass(LivingEntity.class, self.getBoundingBox().expand(radius),
                                 entity -> !(entity instanceof ServerPlayerEntity) && entity.isAlive())) {
-                            if (ModHelpers.isLookingAt(mob, self)) {
-                                // Slowness effect duration is shorter for mobs
-                                int mobDuration = MathHelper.clamp(totalDuration / 2, 1, 127);
-                                FlashbangHelper.applySlownessEffect(mob, mobDuration, 1);
-                            }
+                            // Slowness effect duration is a bit shorter for mobs
+                            int mobDuration = (int) MathHelper.clamp(totalDuration / .35, 1, 127);
+                            FlashbangHelper.applySlownessEffect(mob, mobDuration, 1);
                         }
                     }
 

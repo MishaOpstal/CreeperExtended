@@ -1,7 +1,6 @@
 // ClientFlashOverlay.java (client-only utility)
 package nl.mishaopstal.creeperextended.client;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
@@ -11,8 +10,6 @@ import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -28,8 +25,6 @@ public final class ClientFlashOverlay {
     private static int fadeOutTicks = 10;
     private static int colorRGB = 0xFFFFFF; // configurable via config
 
-    private static RegistryEntry<net.minecraft.entity.effect.StatusEffect> FLASHBANG_ENTRY;
-
     // Signature of the last seen effect instance to avoid retrigger during the same effect
     private static long lastEffectEndTickSig = -1L;
     private static int lastEffectAmplifierSig = -1;
@@ -37,12 +32,6 @@ public final class ClientFlashOverlay {
     private ClientFlashOverlay() {}
 
     public static void initialize() {
-        // Resolve the registry entry for our status effect
-        FLASHBANG_ENTRY = Registries.STATUS_EFFECT.getEntry(CreeperExtended.FLASHBANG_EFFECT);
-
-        // Register tick callback
-        ClientTickEvents.END_CLIENT_TICK.register(ClientFlashOverlay::onClientTick);
-
         // Register HUD render overlay
         HudRenderCallback.EVENT.register((DrawContext drawContext, RenderTickCounter tickCounter) -> {
             renderOverlay(drawContext);
@@ -64,8 +53,8 @@ public final class ClientFlashOverlay {
         });
     }
 
-    private static void onClientTick(MinecraftClient client) {
-        if (client.player == null || client.world == null || FLASHBANG_ENTRY == null) {
+    static void onClientTick(MinecraftClient client) {
+        if (client.player == null || client.world == null || ClientTick.FLASHBANG_ENTRY == null) {
             // reset if no player/world
             flashing = false;
             lastEffectEndTickSig = -1L;
@@ -73,7 +62,7 @@ public final class ClientFlashOverlay {
             return;
         }
 
-        StatusEffectInstance inst = client.player.getStatusEffect(FLASHBANG_ENTRY);
+        StatusEffectInstance inst = client.player.getStatusEffect(ClientTick.FLASHBANG_ENTRY);
         long worldTime = client.world.getTime();
 
         if (inst == null) {
@@ -264,10 +253,10 @@ public final class ClientFlashOverlay {
     // without touching the world camera (HUD-only post overlay).
     private static void renderPersistentWobble(DrawContext drawContext) {
         MinecraftClient client = MinecraftClient.getInstance();
-        if (client == null || client.world == null || client.player == null || FLASHBANG_ENTRY == null) return;
+        if (client == null || client.world == null || client.player == null || ClientTick.FLASHBANG_ENTRY == null) return;
 
         // Only run while the effect is active
-        StatusEffectInstance inst = client.player.getStatusEffect(FLASHBANG_ENTRY);
+        StatusEffectInstance inst = client.player.getStatusEffect(ClientTick.FLASHBANG_ENTRY);
         if (inst == null) return;
 
         // If the bright overlay is active, keep wobble subtle instead of disabling it entirely
