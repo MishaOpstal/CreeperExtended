@@ -3,8 +3,8 @@
 **Creeper Extended** takes Minecraft’s already-chaotic creepers and cranks the dial up past eleven. Expect flashbangs, stun potions, custom effects, music discs, and creepers that beep and spin like they’re auditioning for an action movie. This is an early version of the mod — features are still being added, and feedback is welcome on GitHub.
 
 ## Downloads
-[Modrinth](https://modrinth.com/mod/creeper-extended)
-[GitHub](https://github.com/MishaOpstal/CreeperExtended/releases)
+- [Modrinth](https://modrinth.com/mod/creeper-extended)
+- [GitHub](https://github.com/MishaOpstal/CreeperExtended/releases)
 
 ## Features  
 
