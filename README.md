@@ -37,7 +37,7 @@
   - Beeping gets faster until detonation.  
   - Every part of this behavior can be tweaked in the config.
 
-  <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/LGjUWOb2kAY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  [![Creeper Extended Showcase](https://cloud.onthelink.nl/apps/files_sharing/publicpreview/c3d2WjDqorXCtBG?file=/&fileId=13048&x=2560&y=1600&a=true&etag=c97f33efee2357617c399aecc927fd6b)](https://www.youtube.com/watch?v=LGjUWOb2kAY "Creeper flashbang effect")
 
 ## Configuration  
 
